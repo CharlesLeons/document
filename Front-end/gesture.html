@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+</head>
+<body>
+<div id="container" style="width:300px;height:300px;background-color: navy"></div>
+
+<script>
+let container = document.getElementById("container");
+
+let contexts = new Object(null);
+
+let start = (pointer) => {
+    console.log("start", pointer.clientX, pointer.clientY);
+}
+
+let move = (pointer) => {
+    console.log("move", pointer.clientX, pointer.clientY);
+}
+
+let end = (pointer) => {
+    console.log("end", pointer.clientX, pointer.clientY);
+}
+
+let cancel = (pointer) => {
+    console.log("cancel", pointer.clientX, pointer.clientY);
+}
+
+
+let mousedown = event => {
+    event.preventDefault();
+    start(event);
+    document.addEventListener("mousemove", mousemove);
+    document.addEventListener("mouseup", mouseup);
+}
+
+let mousemove = event => {
+    event.preventDefault();
+    move(event);
+}
+
+let mouseup = event => {
+    end(event);
+    document.removeEventListener("mousemove", mousemove);
+    document.removeEventListener("mouseup", mouseup);
+}
+
+container.addEventListener("mousedown", mousedown);
+
+let touchstart = event => {
+    for(let touch of event.changedTouches) {
+        start(touch);
+    }
+}
+let touchmove = event => {
+    for(let touch of event.changedTouches) {
+        move(touch);
+    }
+}
+let touchend = event => {
+    for(let touch of event.changedTouches) {
+        end(touch);
+    }
+}
+let touchcancel = event => {
+    for(let touch of event.changedTouches) {
+        end(touch);
+    }
+}
+
+this.container.addEventListener("touchstart", touchstart);
+this.container.addEventListener("touchmove", touchmove);
+this.container.addEventListener("touchend", touchend);
+this.container.addEventListener("touchcancel", touchcancel);
+</script>
+</body>
+</html>
