@@ -17,6 +17,7 @@
             transition: ease 0.5s;
         }
     </style>
+    <script src="gesture.js"></script>
 </head>
 <body>
 <div id="container"></div>
@@ -65,34 +66,28 @@
             }
             // setTimeout(nextPic, 2000);
 
-            let startTransform, startX;
-            let start = event => {
-                event.preventDefault();
-                startX = event.clientX;
-                startTransform = - 500 * position;
-                document.addEventListener("mousemove", move);
-                document.addEventListener("mouseup", end);
-            }
-            let move = event => {
-                event.preventDefault();
+
+            let startTransform;                      //起始位置
+
+            enableGesture(this._container);          //添加手势
+
+            this._container.addEventListener("pan", event => {
+                startTransform = - position * 500;
                 for(let child of children) {
                     child.style.transition = "ease 0s";
-                    child.style.transform = `translateX(${startTransform + event.clientX - startX}px)`;
+                    child.style.transform = `translateX(${startTransform + event.dx}px)`;   //此处
                 }
-            }
-            let end = event => {
-                document.removeEventListener("mousemove", move);
-                document.removeEventListener("mouseup", end);
-                
-                position = - Math.round((startTransform + event.clientX - startX) / 500);
-                position = Math.max(0, Math.min(position, children.length - 1));
-
+            })
+            this._container.addEventListener("panend", event => {
                 for(let child of children) {
+                    position = - Math.round((startTransform + event.dx) / 500);             //与此处值相同
+                    position = Math.max(0, Math.min(position, children.length - 1));
+
                     child.style.transition = "";
                     child.style.transform = `translateX(${- position * 500}px)`;
                 }
-            }
-            this._container.addEventListener("mousedown", start);
+            })
+            this._container.addEventListener("mousedown", event => event.preventDefault());  //消除img默认拖拽效果
         }
     }
     let carousel = new Carousel(document.getElementById("container"));
