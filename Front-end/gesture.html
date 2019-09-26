@@ -9,39 +9,57 @@
 <script>
 let container = document.getElementById("container");
 
-let contexts = new Object(null);
+let contexts = Object.create(null);
+let mouseSymbol = Symbol("mouse");      //抹平鼠标和触控的区别
 
-let start = (pointer) => {
-    console.log("start", pointer.clientX, pointer.clientY);
+
+let start = (point, context) => {
+    context.startX = point.clientX;
+    context.startY = point.clientY;
+
+    context.isTap = true;
+    context.isPan = false;
 }
 
-let move = (pointer) => {
-    console.log("move", pointer.clientX, pointer.clientY);
+let move = (point, context) => {
+    let dx = point.clientX - context.startX, dy = point.clientY - context.startY;
+    if (dx * dx + dy * dy > 100) {
+        context.isTap = false;
+        context.isPan = true;
+    }
 }
 
-let end = (pointer) => {
-    console.log("end", pointer.clientX, pointer.clientY);
+let end = (point, context) => {
+    if (context.isTap) {
+        console.log("tap");
+    }
+    if (context.isPan) {
+        console.log("panend");
+    }
 }
 
-let cancel = (pointer) => {
-    console.log("cancel", pointer.clientX, pointer.clientY);
+let cancel = (point, context) => {
+    if (context.isPan) {
+        console.log("pancancel");
+    }
 }
 
 
 let mousedown = event => {
-    event.preventDefault();
-    start(event);
     document.addEventListener("mousemove", mousemove);
     document.addEventListener("mouseup", mouseup);
+    contexts[mouseSymbol] = Object.create(null);
+    start(event, contexts[mouseSymbol]);
 }
 
 let mousemove = event => {
-    event.preventDefault();
-    move(event);
+    contexts[mouseSymbol] = Object.create(null);
+    move(event, contexts[mouseSymbol]);
 }
 
 let mouseup = event => {
-    end(event);
+    end(event, contexts[mouseSymbol]);
+    delete contexts[mouseSymbol];
     document.removeEventListener("mousemove", mousemove);
     document.removeEventListener("mouseup", mouseup);
 }
@@ -50,22 +68,25 @@ container.addEventListener("mousedown", mousedown);
 
 let touchstart = event => {
     for(let touch of event.changedTouches) {
-        start(touch);
+        contexts[touch.identifier] = Object.create(null);
+        start(touch, contexts[touch.identifier]);
     }
 }
 let touchmove = event => {
     for(let touch of event.changedTouches) {
-        move(touch);
+        move(touch, contexts[touch.identifier]);
     }
 }
 let touchend = event => {
     for(let touch of event.changedTouches) {
-        end(touch);
+        end(touch, contexts[touch.identifier]);
+        delete contexts[touch.identifier];
     }
 }
 let touchcancel = event => {
     for(let touch of event.changedTouches) {
-        end(touch);
+        cancel(touch, contexts[touch.identifier]);
+        delete contexts[touch.identifier];
     }
 }
 
