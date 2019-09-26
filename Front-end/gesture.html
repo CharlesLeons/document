@@ -9,8 +9,14 @@
 <script>
 let container = document.getElementById("container");
 
-let contexts = Object.create(null);
-let mouseSymbol = Symbol("mouse");      //抹平鼠标和触控的区别
+let startX = 0, startY = 0;
+container.addEventListener("pan", event => {
+    container.style.transform = `translate(${startX + event.dx}px, ${startY + event.dy}px)`;
+})
+container.addEventListener("panend", event => {
+    startX += event.dx;
+    startY += event.dy;
+})
 
 
 let start = (point, context) => {
@@ -27,23 +33,37 @@ let move = (point, context) => {
         context.isTap = false;
         context.isPan = true;
     }
+    if (context.isPan) {
+        let e = new Event("pan");
+        e.dx = dx;
+        e.dy = dy;
+        container.dispatchEvent(e);
+    }
 }
 
 let end = (point, context) => {
+    let dx = point.clientX - context.startX, dy = point.clientY - context.startY;
     if (context.isTap) {
-        console.log("tap");
+        let e = new Event("tap");
+        container.dispatchEvent(e);
     }
     if (context.isPan) {
-        console.log("panend");
+        let e = new Event("panend");
+        e.dx = dx;
+        e.dy = dy;
+        container.dispatchEvent(e);
     }
 }
 
 let cancel = (point, context) => {
     if (context.isPan) {
-        console.log("pancancel");
+        let e = new Event("pancancel");
+        container.dispatchEvent(e);
     }
 }
 
+let contexts = Object.create(null);
+let mouseSymbol = Symbol("mouse");      //抹平鼠标和触控的区别
 
 let mousedown = event => {
     document.addEventListener("mousemove", mousemove);
@@ -53,7 +73,6 @@ let mousedown = event => {
 }
 
 let mousemove = event => {
-    contexts[mouseSymbol] = Object.create(null);
     move(event, contexts[mouseSymbol]);
 }
 
