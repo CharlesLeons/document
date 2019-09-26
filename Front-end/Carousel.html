@@ -79,10 +79,20 @@
                 }
             })
             this._container.addEventListener("panend", event => {
-                for(let child of children) {
+                if (event.isFlick) {
+                    if (event.dx > 0) {
+                        position = position - 1;
+                    }
+                    if (event.dx < 0) {
+                        position = position + 1;
+                    }
+                } else {
                     position = - Math.round((startTransform + event.dx) / 500);             //与此处值相同
-                    position = Math.max(0, Math.min(position, children.length - 1));
+                }
 
+                position = Math.max(0, Math.min(position, children.length - 1));
+                
+                for(let child of children) {
                     child.style.transition = "";
                     child.style.transform = `translateX(${- position * 500}px)`;
                 }

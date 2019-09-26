@@ -3,6 +3,8 @@ function enableGesture(container) {
         context.startX = point.clientX;
         context.startY = point.clientY;
 
+        context.startTime = Date.now();
+
         context.isTap = true;
         context.isPan = false;
     }
@@ -27,10 +29,21 @@ function enableGesture(container) {
             let e = new Event("tap");
             container.dispatchEvent(e);
         }
+        let v =  Math.sqrt(dx * dx + dy * dy) / (Date.now() - context.startTime)
+        if (context.isPan &&  v > 0.3) {
+            context.isFlick = true;
+            let e = new Event("flick");
+            e.dx = dx;
+            e.dy = dy;
+            container.dispatchEvent(e);
+        } else {
+            context.isFlick = false;
+        }
         if (context.isPan) {
             let e = new Event("panend");
             e.dx = dx;
             e.dy = dy;
+            e.isFlick = context.isFlick;
             container.dispatchEvent(e);
         }
     }
