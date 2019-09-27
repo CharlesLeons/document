@@ -14,6 +14,7 @@ class TimeLine {
         this._animations = [];
         this.status = "inited";
         this._rate = 1;
+        this._startPoint = 0;
     }
     pause() {
         if (this.status != "started")
@@ -41,7 +42,7 @@ class TimeLine {
         this._tick = () => {
             for(let animation of this._animations) {
                 if (!animation.finished) {
-                    animation.tick((Date.now() - this.pauseTime- startTime) * this._rate);
+                    animation.tick((Date.now() - this.pauseTime - startTime) * this._rate + this._startPoint);
                 }
             }
             if (this._tick)
@@ -76,15 +77,27 @@ class DOMElementStyleNumberAnimation {
         this._endTime = endTime;
         this._endValue = endValue;
         this._converter = conveter;
+        this._fixKeyFrame = false;
     }
     tick(t) {
         if (t > this._endTime) {
-            t = this._endTime;
-            this.finished = true;
+            if (!this._fixKeyFrame)
+                return;
+            else {
+                t = this._endTime;
+                this._fixKeyFrame = false;
+            }
+        } else if (t < this._startTime) {
+            if (!this._fixKeyFrame)
+                return;
+            else{
+                t = this._startTime;
+                this._fixKeyFrame = false;
+            }
+        } else {
+            this._fixKeyFrame = true;
         }
-        if (t < this._startTime) {
-            return;
-        }
+
         let progress = (t - this._startTime) / (this._endTime - this._startTime);
         let displacement = ease(progress) * (this._endValue - this._startValue);
         let currentValue = displacement + this._startValue;
@@ -120,6 +133,7 @@ tl.addAnimation(new DOMElementStyleNumberAnimation(
     2000, 0,
     (v) => `${v}px`
 ))
-tl.rate = 2;
+tl.rate = -1;
+tl.startPoint = 2000;
 tl.start();
 </script>
