@@ -7,13 +7,31 @@ function enableGesture(container) {
 
         context.isTap = true;
         context.isPan = false;
+        context.isPress = false;
+        context.pressHandler = setTimeout(() => {
+            context.isPress = true;
+            context.isTap = false;
+            let e = new Event("pressstart");
+            container.dispatchEvent(e);
+            context.pressHandler = null;
+        }, 500)
     }
 
     let move = (point, context) => {
         let dx = point.clientX - context.startX, dy = point.clientY - context.startY;
         if (dx * dx + dy * dy > 100) {
-            context.isTap = false;
 
+            if (context.pressHandler !== null) {
+                clearTimeout(context.pressHandler);
+                context.pressHandler = null;
+                context.isPress = false;
+            } else if (context.isPress) {
+                context.isPress = false;
+                let e = new Event("presscancel");
+                container.dispatchEvent(e);
+            }
+            
+            context.isTap = false;
             
             if (context.isPan == false) {
                 if (Math.abs(dx) > Math.abs(dy)) {
@@ -42,6 +60,16 @@ function enableGesture(container) {
 
     let end = (point, context) => {
         let dx = point.clientX - context.startX, dy = point.clientY - context.startY;
+
+        if (context.pressHandler !== null) {
+            clearTimeout(context.pressHandler);
+        }
+
+        if (context.isPress) {
+            let e = new Event("pressend");
+            container.dispatchEvent(e);
+        }
+        
         if (context.isTap) {
             let e = new Event("tap");
             container.dispatchEvent(e);
@@ -71,6 +99,15 @@ function enableGesture(container) {
         if (context.isPan) {
             let e = new Event("pancancel");
             container.dispatchEvent(e);
+        }
+        if (context.isPress) {
+            let e = new Event("presscancel");
+            container.dispatchEvent(e);
+        }
+        if (context.pressHandler !== null) {
+            let e = new Event("pancancel");
+            container.dispatchEvent(e);
+            clearTimeout(context.pressHandler);
         }
     }
 
