@@ -1,0 +1,90 @@
+<div id="ball" style="position:absolute;top:0;left:0;width:50px;height:50px;border-radius:50%;background-color:navy"></div>
+
+<script>
+class TimeLine {
+    constructor() {
+        this._animations = [];
+    }
+    pause() {
+
+    }
+    resume() {
+
+    }
+    start() {
+        let startTime = Date.now();
+        setInterval(() => {
+            for(let animation of this._animations) {
+                if (!animation.finished) {
+                    animation.tick(Date.now() - startTime);
+                }
+            }
+        }, 16)
+    }
+    set rete(value) {
+
+    }
+    get rate() {
+
+    }
+    addAnimation(animation) {
+        this._animations.push(animation);
+    }
+    removeAnimation(animation) {
+
+    }
+}
+
+class DOMElementStyleNumberAnimation {
+    constructor(element, property, startTime, startValue, endTime, endValue, conveter) {
+        this._element = element;
+        this._property = property;
+        this._startTime = startTime;
+        this._startValue = startValue;
+        this._endTime = endTime;
+        this._endValue = endValue;
+        this._converter = conveter;
+    }
+    tick(t) {
+        if (t > this._endTime) {
+            t = this._endTime;
+            this.finished = true;
+        }
+        if (t < this._startTime) {
+            return;
+        }
+        this._element.style[this._property] = this._converter((t - this._startTime) / (this._endTime - this._startTime) * (this._endValue - this._startValue) + this._startValue);
+    }
+}
+
+let tl = new TimeLine();
+tl.addAnimation(new DOMElementStyleNumberAnimation(
+    document.getElementById("ball"),
+    "top",
+    0, 0,
+    500, 200,
+    (v) => `${v}px`
+))
+tl.addAnimation(new DOMElementStyleNumberAnimation(
+    document.getElementById("ball"),
+    "left",
+    500, 0,
+    1000, 200,
+    (v) => `${v}px`
+))
+tl.addAnimation(new DOMElementStyleNumberAnimation(
+    document.getElementById("ball"),
+    "top",
+    1000, 200,
+    1500, 0,
+    (v) => `${v}px`
+))
+tl.addAnimation(new DOMElementStyleNumberAnimation(
+    document.getElementById("ball"),
+    "left",
+    1500, 200,
+    2000, 0,
+    (v) => `${v}px`
+))
+tl.start();
+</script>
