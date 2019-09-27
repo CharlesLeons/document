@@ -72,6 +72,7 @@
             enableGesture(this._container);          //添加手势
 
             this._container.addEventListener("pan", event => {
+                if (event.isVertical) return;
                 startTransform = - position * 500;
                 for(let child of children) {
                     child.style.transition = "ease 0s";
@@ -79,7 +80,8 @@
                 }
             })
             this._container.addEventListener("panend", event => {
-                if (event.isFlick) {
+                if (event.isVertical) return;
+                if (event.isFlick && Math.abs(event.dx) > Math.abs(event.dy)) {
                     if (event.dx > 0) {
                         position = position - 1;
                     }

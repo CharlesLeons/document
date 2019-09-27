@@ -13,12 +13,29 @@ function enableGesture(container) {
         let dx = point.clientX - context.startX, dy = point.clientY - context.startY;
         if (dx * dx + dy * dy > 100) {
             context.isTap = false;
-            context.isPan = true;
+
+            
+            if (context.isPan == false) {
+                if (Math.abs(dx) > Math.abs(dy)) {
+                    context.isVertical = false;
+                    context.isHorizontal = true;
+                } else {
+                    context.isVertical = true;
+                    context.isHorizontal = false;
+                }
+                let e = new Event("panstart");
+                e.dx = dx;
+                e.dy = dy;
+                container.dispatchEvent(e);
+                context.isPan = true;
+            }
         }
         if (context.isPan) {
             let e = new Event("pan");
             e.dx = dx;
             e.dy = dy;
+            e.isVertical = context.isVertical;
+            e.isHorizontal = context.isHorizontal;
             container.dispatchEvent(e);
         }
     }
@@ -30,7 +47,7 @@ function enableGesture(container) {
             container.dispatchEvent(e);
         }
         let v =  Math.sqrt(dx * dx + dy * dy) / (Date.now() - context.startTime)
-        if (context.isPan &&  v > 0.3) {
+        if (context.isPan && v > 0.3) {
             context.isFlick = true;
             let e = new Event("flick");
             e.dx = dx;
@@ -44,6 +61,8 @@ function enableGesture(container) {
             e.dx = dx;
             e.dy = dy;
             e.isFlick = context.isFlick;
+            e.isVertical = context.isVertical;
+            e.isHorizontal = context.isHorizontal;
             container.dispatchEvent(e);
         }
     }
