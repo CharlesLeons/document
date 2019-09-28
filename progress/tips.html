@@ -13,11 +13,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no" />
 
 <script>
-const contentLoaded = () => {
+function loadScript(src) {
     new Promise((resolve, reject) => {
-        return document.addEventListener("DOMContentLoaded", () => {
-            resolve("done");
-        });
+        let scriptElement = document.createElement("script");
+        scriptElement.src = src;
+        scriptElement.addEventListener("load", resolve);
+        // document.documentElement.appendChild(scriptElement);
+        document.getElementsByTagName("head")[0].appendChild(scriptElement);
     });
 }
 
@@ -27,31 +29,18 @@ function happen(object, type,config) {
     })
 }
 
-happen(document, "DOMContentLoaded").then(() => {
-    console.log(document.body);
-})
-
-fetch("./data.json").then(response => {
-    response.json.then(obj => {
-        console.log(obj);
-    })
-})
-
-Promise.all([
-    happen(document, "DOMContentLoaded"),
-    fetch("./data.json").then(response => response.json())
-]).then(results => {
-    console.log(results);
-})
-
 void async function() {
 
     let [obj, event] = await Promise.all([
-        fetch("./data.json").then(response => response.json()),
-        happen(document, "DOMContentLoaded")
+        // fetch("./data.json").then(response => response.json()),
+        (async () => {
+            return await(await fetch("./data.json")).json()
+        }),
+        happen(document, "DOMContentLoaded"),
+        loadScript(".main.js")
     ]);
 
-    console.log(obj, event)
+    window.render(obj, document.body);
 }();
 
 
