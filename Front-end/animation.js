@@ -1,4 +1,7 @@
-class TimeLine {
+let ease = cubicBezier(.25, .1, .25, 1);
+let linear = cubicBezier(0, 0, 1, 1);
+
+class Timeline {
     constructor() {
         this._animations = [];
         this.status = "inited";
@@ -39,6 +42,14 @@ class TimeLine {
         };
         requestAnimationFrame(this._tick);
     }
+    restart() {
+        if (this._tick) {
+            this._tick = null;
+        }
+        this._resumeTick = null;
+        this.status = "inited";
+        requestAnimationFrame(() => this.start());
+    }
     set startPoint(value) {
         this._startPoint = value;
     }
@@ -55,6 +66,9 @@ class TimeLine {
         this._animations.push(animation);
     }
     removeAnimation(animation) {
+    }
+    clearAnimtaion() {
+        this._animations.length = 0;
     }
 }
 
