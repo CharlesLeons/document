@@ -37,6 +37,7 @@
             this._container = container;
             this._container.classList.add("carousel");
             this.data = null;
+            enableGesture(this._container);
         }
         render() {
             for(let d of data) {
@@ -47,6 +48,7 @@
             var tl = new Timeline;
             let children = Array.prototype.slice.call(container.children);
             let position = 0;
+            let offsetStartTime = 0;
             let nextPic = () => {
                 let nextPosition = position + 1;
                 nextPosition = nextPosition % children.length;
@@ -68,6 +70,8 @@
                 next.style.transition = "ease 0s";
                 next.style.transform = `translate(${100 - 100 * nextPosition}%)`;
                 
+                offsetStartTime = Date.now();
+
                 //清理全部动画，每次只有 current 和 next 移动
                 tl.clearAnimtaion();
 
@@ -89,15 +93,22 @@
 
                 position = nextPosition;
 
-                setTimeout(nextPic, 3000);
+                nextPicTimer = setTimeout(nextPic, 3000);
             }
-            setTimeout(nextPic, 3000);
+            let nextPicTimer = setTimeout(nextPic, 3000);
 
             
             let startTransform;                      //起始位置
-            enableGesture(this._container);          //添加手势
-            this._container.addEventListener("panstart", event => {
-                // startTransform = - position * 500;
+            let offset = 0;
+            this._container.addEventListener("mousedown", event => {
+                tl.pause();
+                let currentTime = Date.now();
+                if (currentTime - offsetStartTime < 1000) {
+                    offset = 500 - ease((currentTime - offsetStartTime) / 1000) * 500;
+                } else {
+                    offset = 0;
+                }
+                clearTimeout(nextPicTimer);
             })
             this._container.addEventListener("pan", event => {
                 if (event.isVertical) return;
@@ -107,15 +118,15 @@
                 let next = children[nextPosition];
                 let lastPosition = (children.length + position - 1) % children.length;
                 let last = children[lastPosition];
-    
+                
                 last.style.transition = "ease 0s";
-                last.style.transform = `translate(${-500 - 500 * lastPosition + event.dx}px)`;
+                last.style.transform = `translate(${-500 - 500 * lastPosition + event.dx + offset}px)`;
     
                 next.style.transition = "ease 0s";
-                next.style.transform = `translate(${500 - 500 * nextPosition + event.dx}px)`;
+                next.style.transform = `translate(${500 - 500 * nextPosition + event.dx + offset}px)`;
     
                 current.style.transition = "ease 0s";
-                current.style.transform = `translate(${ - 500 * position + event.dx}px)`;
+                current.style.transform = `translate(${ - 500 * position + event.dx + offset}px)`;
             })
             this._container.addEventListener("panend", event => {
                 if (event.isVertical) return;
@@ -174,6 +185,8 @@
                 //     child.style.transition = "";
                 //     child.style.transform = `translateX(${- position * 500}px)`;
                 // }
+
+                tl.resume();
             })
             this._container.addEventListener("mousedown", event => event.preventDefault());  //消除img默认拖拽效果
         }
