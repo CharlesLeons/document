@@ -1,7 +1,9 @@
+import {cubicBezier} from "./cubicBezier.js"
+
 let ease = cubicBezier(.25, .1, .25, 1);
 let linear = cubicBezier(0, 0, 1, 1);
 
-class Timeline {
+export class Timeline {
     constructor() {
         this._animations = [];
         this.status = "inited";
@@ -72,7 +74,7 @@ class Timeline {
     }
 }
 
-class DOMElementStyleNumberAnimation {
+export class DOMElementStyleNumberAnimation {
     constructor(element, property, startTime, startValue, endTime, endValue, conveter) {
         this._element = element;
         this._property = property;
@@ -109,7 +111,7 @@ class DOMElementStyleNumberAnimation {
     }
 }
 
-class DOMElementStyleVectoriAnimation {
+export class DOMElementStyleVectoriAnimation {
     constructor(element, property, startTime, startValue, endTime, endValue, conveter) {
         this._element = element;
         this._property = property;

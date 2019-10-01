@@ -1,3 +1,6 @@
+import {enableGesture} from "./gesture.js"
+import {Timeline, DOMElementStyleNumberAnimation, DOMElementStyleVectoriAnimation} from "./animation.js"
+
 const PROPERTY_SYMBOL = Symbol("property");
 const ATTRIBUTE_SYMBOL = Symbol("attribute");
 const EVENT_SYMBOL = Symbol("event");
@@ -10,27 +13,28 @@ export default class Carousel {
         this[ATTRIBUTE_SYMBOL] = Object.create(null); //存attribute用Object.create(null)，与其他代码没有关系
         this[EVENT_SYMBOL] = Object.create(null); 
         this[STATE_SYMBOL] = Object.create(null);
-        this[PROPERTY_SYMBOL].children = [];
-        this[PROPERTY_SYMBOL].tl = new Timeline;
-        this[PROPERTY_SYMBOL].position = 0;
-        this[PROPERTY_SYMBOL].offsetStartTime = 0;
-        this[PROPERTY_SYMBOL].nextPicTimer = null;
+        this[ATTRIBUTE_SYMBOL].children = [];
+        this[ATTRIBUTE_SYMBOL].tl = new Timeline;
         this.created();
     }
 
     appendTo(element) {
-        element.appendChild(this.root);
+        element.appendChild(this[ATTRIBUTE_SYMBOL].root);
         this.mounted();
     }
 
     created() {
-        this.root = document.createElement("div");
-        addChild(this.data);
-        addConductor();
-        this.nextPicTimer = setTimeout(this.nextPic, 3000);
-        enableGesture(this.root);
+        this[ATTRIBUTE_SYMBOL].root = document.createElement("div");
+        this[ATTRIBUTE_SYMBOL].root.classList.add("carousel");
+        enableGesture(this[ATTRIBUTE_SYMBOL].root);
+        this[ATTRIBUTE_SYMBOL].root.addEventListener("mousedown", event => event.preventDefault());
     }
     mounted() {
+        this[ATTRIBUTE_SYMBOL].root.style.cssText = this.getAttribute("style");
+        this[ATTRIBUTE_SYMBOL].position = 0;
+        this[ATTRIBUTE_SYMBOL].offsetStartTime = 0;
+        this.addIndicator();
+        this[ATTRIBUTE_SYMBOL].nextPicTimer = setTimeout(this.nextPic.bind(this), 3000);
         
     }
     unmounted() {
@@ -41,44 +45,49 @@ export default class Carousel {
     }
 
     //加入指示器
-    addConductor() {
-        this.conductor = document.createElement("div");
-        this.conductor.classList.add("conductor");
-        this.root.appendChild(this.conductor);
+    addIndicator() {
+        this[ATTRIBUTE_SYMBOL].indicator = document.createElement("div");
+        this[ATTRIBUTE_SYMBOL].indicator.classList.add("indicator");
+        this[ATTRIBUTE_SYMBOL].root.appendChild(this[ATTRIBUTE_SYMBOL].indicator);
 
-        for(let i = 0; i < this.children.length; i++) {
+        for(let i = 0; i < this[ATTRIBUTE_SYMBOL].children.length; i++) {
             let e = document.createElement("div");
             e.style.opacity = 0.3;
-            this.conductor.appendChild(e);
+            this[ATTRIBUTE_SYMBOL].indicator.appendChild(e);
         }
-        this.conductor.children[position].style.opacity = 1;
+        this[ATTRIBUTE_SYMBOL].indicator.children[this[ATTRIBUTE_SYMBOL].position].style.opacity = 1;
     }
 
     //加入图片
-    addChild(data) {
+    addChildren(data) {
         for(let d of data) {
             let e = document.createElement("img");
             e.src = d;
-            appendChild(e);
+            this[ATTRIBUTE_SYMBOL].root.appendChild(e);
         }
+        this[ATTRIBUTE_SYMBOL].children = Array.prototype.slice.call(this[ATTRIBUTE_SYMBOL].root.children);
+        this[ATTRIBUTE_SYMBOL].children.map(item => {
+            item.style.cssText = `width:100%;height:100%;transition:ease 0.5s`;
+        })
     }
 
+    
     //轮播效果
     nextPic() {
-        let nextPosition = this.position + 1;
-        nextPosition = nextPosition % this.children.length;
+        let nextPosition = this[ATTRIBUTE_SYMBOL].position + 1;
+        nextPosition = nextPosition % this[ATTRIBUTE_SYMBOL].children.length;
         
-        //conductor changed by nextPosition
-        for(let child of this.conductor.children) {
+        //indicator changed by nextPosition
+        for(let child of this[ATTRIBUTE_SYMBOL].indicator.children) {
             child.style.opacity = "0.3";
         }
-        this.conductor.children[nextPosition].style.opacity = 1;
+        this[ATTRIBUTE_SYMBOL].indicator.children[nextPosition].style.opacity = 1;
 
-        let current = this.children[this.position],
-        next = this.children[nextPosition];
+        let current = this[ATTRIBUTE_SYMBOL].children[this[ATTRIBUTE_SYMBOL].position],
+        next = this[ATTRIBUTE_SYMBOL].children[nextPosition];
         
             //利用 display:flex 和 zIndex 设置层叠
-        for(let child of this.children) {                      
+        for(let child of this[ATTRIBUTE_SYMBOL].children) {                      
             child.style.zIndex = 0;
         }
         current.style.zIndex = 1;
@@ -93,33 +102,27 @@ export default class Carousel {
         this.offsetStartTime = Date.now();
 
         //清理全部动画，每次只有 current 和 next 移动
-        this.tl.clearAnimtaion();
+        this[ATTRIBUTE_SYMBOL].tl.clearAnimtaion();
 
-        this.tl.addAnimation(new DOMElementStyleNumberAnimation(
+        this[ATTRIBUTE_SYMBOL].tl.addAnimation(new DOMElementStyleNumberAnimation(
             current,
             "transform",
-            0, - 500 * this.position,
-            1000, - 500 - 500 * this.position,
+            0, - 500 * this[ATTRIBUTE_SYMBOL].position,
+            1000, - 500 - 500 * this[ATTRIBUTE_SYMBOL].position,
             (v) => `translateX(${v}px)`
         ));
-        this.tl.addAnimation(new DOMElementStyleNumberAnimation(
+        this[ATTRIBUTE_SYMBOL].tl.addAnimation(new DOMElementStyleNumberAnimation(
             next,
             "transform",
             0, 500 - 500 * nextPosition,
             1000, - 500 * nextPosition,
             (v) => `translateX(${v}px)`
         ))
-        this.tl.restart();
+        this[ATTRIBUTE_SYMBOL].tl.restart();
 
-        this.position = nextPosition;
+        this[ATTRIBUTE_SYMBOL].position = nextPosition;
 
-        this.nextPicTimer = setTimeout(this.nextPic, 3000);
-    }
-
-
-    appendChild(child) {
-        this.children.push(child);
-        child.appendTo(this.root);
+        this[ATTRIBUTE_SYMBOL].nextPicTimer = setTimeout(this.nextPic.bind(this), 3000);
     }
 
     
@@ -128,19 +131,12 @@ export default class Carousel {
     }
 
     getAttribute(name) {
-        if(name == "style") {
-            return this.root.getAttribute("style");
-        }
-        if(name == "data") {
-            return this.root.getAttribute("data");
-        }
         return this[ATTRIBUTE_SYMBOL][name];
     }
     setAttribute(name, value) {
-        if(name == "style") {
-            this.root.setAttribute("style", value);
+        if(name == "data") {
+            this.addChildren(value);
         }
-
         return this[ATTRIBUTE_SYMBOL][name] = value;
     }
     

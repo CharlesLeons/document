@@ -1,4 +1,4 @@
-function enableGesture(container) {
+export function enableGesture(container) {
     let start = (point, context) => {
         context.startX = point.clientX;
         context.startY = point.clientY;
@@ -158,8 +158,8 @@ function enableGesture(container) {
         }
     }
 
-    this.container.addEventListener("touchstart", touchstart);
-    this.container.addEventListener("touchmove", touchmove);
-    this.container.addEventListener("touchend", touchend);
-    this.container.addEventListener("touchcancel", touchcancel);
+    container.addEventListener("touchstart", touchstart);
+    container.addEventListener("touchmove", touchmove);
+    container.addEventListener("touchend", touchend);
+    container.addEventListener("touchcancel", touchcancel);
 }
