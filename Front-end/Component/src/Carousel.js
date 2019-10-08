@@ -20,23 +20,29 @@ export default class Carousel {
 
     appendTo(element) {
         element.appendChild(this[ATTRIBUTE_SYMBOL].root);
+        this[ATTRIBUTE_SYMBOL].root.classList.add("carousel");
         this.mounted();
     }
 
     created() {
         this[ATTRIBUTE_SYMBOL].root = document.createElement("div");
-        this[ATTRIBUTE_SYMBOL].root.classList.add("carousel");
         enableGesture(this[ATTRIBUTE_SYMBOL].root);
-        this.addEvent();
+        this.widthNum = `${this.getAttribute("width") || this.width || 500}`;
     }
     mounted() {
         this[ATTRIBUTE_SYMBOL].root.style.cssText = this.getAttribute("style");
         this[ATTRIBUTE_SYMBOL].position = 0;
         this[ATTRIBUTE_SYMBOL].offsetStartTime = 0;
-        this.addIndicator();
-        this[ATTRIBUTE_SYMBOL].nextPicTimer = setTimeout(this.nextPic.bind(this), 3000);
+        this[ATTRIBUTE_SYMBOL].tl.rate = `${this.getAttribute("rate") || this.rate || 1}`;
+        this[ATTRIBUTE_SYMBOL].autoplay = `${this.getAttribute("autoplay") || this.autoplay || true}`;
+        if (this[ATTRIBUTE_SYMBOL].autoplay == "true") 
+            this[ATTRIBUTE_SYMBOL].nextPicTimer = setTimeout(this.nextPic.bind(this), `${this.getAttribute("fullTime") || this.fullTime || 3000}`);
+        this[ATTRIBUTE_SYMBOL].indicatorSwt = `${this.getAttribute("indicator") || this.indicator || true}`;
+        if (this[ATTRIBUTE_SYMBOL].indicatorSwt == "true")
+            this.addIndicator();
         this[ATTRIBUTE_SYMBOL].startTransform;                      //起始位置
         this[ATTRIBUTE_SYMBOL].offset = 0;
+        this.addEvent();
     }
     unmounted() {
 
@@ -45,7 +51,7 @@ export default class Carousel {
 
     }
 
-    //加入指示器
+    //加入指示器  
     addIndicator() {
         this[ATTRIBUTE_SYMBOL].indicator = document.createElement("div");
         this[ATTRIBUTE_SYMBOL].indicator.classList.add("indicator");
@@ -67,9 +73,6 @@ export default class Carousel {
             this[ATTRIBUTE_SYMBOL].root.appendChild(e);
         }
         this[ATTRIBUTE_SYMBOL].children = Array.prototype.slice.call(this[ATTRIBUTE_SYMBOL].root.children);
-        this[ATTRIBUTE_SYMBOL].children.map(item => {
-            item.style.cssText = `width:100%;height:100%;transition:ease 0.5s`;
-        })
     }
 
     
@@ -79,10 +82,12 @@ export default class Carousel {
         nextPosition = nextPosition % this[ATTRIBUTE_SYMBOL].children.length;
         
         //indicator changed by nextPosition
-        for(let child of this[ATTRIBUTE_SYMBOL].indicator.children) {
-            child.style.opacity = "0.3";
+        if (this[ATTRIBUTE_SYMBOL].indicatorSwt == "true") {
+            for(let child of this[ATTRIBUTE_SYMBOL].indicator.children) {
+                child.style.opacity = "0.3";
+            }
+            this[ATTRIBUTE_SYMBOL].indicator.children[nextPosition].style.opacity = 1;
         }
-        this[ATTRIBUTE_SYMBOL].indicator.children[nextPosition].style.opacity = 1;
 
         let current = this[ATTRIBUTE_SYMBOL].children[this[ATTRIBUTE_SYMBOL].position],
         next = this[ATTRIBUTE_SYMBOL].children[nextPosition];
@@ -108,43 +113,50 @@ export default class Carousel {
         this[ATTRIBUTE_SYMBOL].tl.addAnimation(new DOMElementStyleNumberAnimation(
             current,
             "transform",
-            0, - 500 * this[ATTRIBUTE_SYMBOL].position,
-            1000, - 500 - 500 * this[ATTRIBUTE_SYMBOL].position,
+            0, - this.widthNum * this[ATTRIBUTE_SYMBOL].position,
+            `${this.getAttribute("switchTime") || this.switchTime || 1000}`, - this.widthNum - this.widthNum * this[ATTRIBUTE_SYMBOL].position,
             (v) => `translateX(${v}px)`
         ));
         this[ATTRIBUTE_SYMBOL].tl.addAnimation(new DOMElementStyleNumberAnimation(
             next,
             "transform",
-            0, 500 - 500 * nextPosition,
-            1000, - 500 * nextPosition,
+            0, this.widthNum - this.widthNum * nextPosition,
+            `${this.getAttribute("switchTime") || this.switchTime || 1000}`, - this.widthNum * nextPosition,
             (v) => `translateX(${v}px)`
         ))
         this[ATTRIBUTE_SYMBOL].tl.restart();
 
         this[ATTRIBUTE_SYMBOL].position = nextPosition;
 
-        this[ATTRIBUTE_SYMBOL].nextPicTimer = setTimeout(this.nextPic.bind(this), 3000);
+        this[ATTRIBUTE_SYMBOL].nextPicTimer = setTimeout(this.nextPic.bind(this), `${this.getAttribute("fullTime") || this.fullTime || 3000}`);
     }
 
     //加入手势
     addEvent() {
         this[ATTRIBUTE_SYMBOL].root.addEventListener("mousedown", event => event.preventDefault());
         this[ATTRIBUTE_SYMBOL].root.addEventListener("mousedown", event => this.mousedown(event));
+        this[ATTRIBUTE_SYMBOL].root.addEventListener("tap", event => this.tap(event));
         this[ATTRIBUTE_SYMBOL].root.addEventListener("pan", event => this.pan(event));
         this[ATTRIBUTE_SYMBOL].root.addEventListener("panend", event => this.panend(event));
     }
-
+    //鼠标按下
     mousedown(event) {
         this[ATTRIBUTE_SYMBOL].tl.pause();
         let currentTime = Date.now();
         if (currentTime - this[ATTRIBUTE_SYMBOL].offsetStartTime < 1000) {
-            this[ATTRIBUTE_SYMBOL].offset = 500 - ease((currentTime - this[ATTRIBUTE_SYMBOL].offsetStartTime) / 1000) * 500;
+            this[ATTRIBUTE_SYMBOL].offset = this.widthNum - ease((currentTime - this[ATTRIBUTE_SYMBOL].offsetStartTime) / 1000) * this.widthNum;
         } else {
             this[ATTRIBUTE_SYMBOL].offset = 0;
         }
         clearTimeout(this[ATTRIBUTE_SYMBOL].nextPicTimer);
     }
-    
+    //鼠标点击
+    tap(event) {
+        if (this[ATTRIBUTE_SYMBOL].autoplay == "true")
+            this[ATTRIBUTE_SYMBOL].nextPicTimer = setTimeout(this.nextPic.bind(this), `${this.getAttribute("fullTime") || this.fullTime || 3000}`);
+        console.log("tap");
+    }
+    //鼠标拖拽
     pan(event) {
         if (event.isVertical) return;
         
@@ -156,13 +168,13 @@ export default class Carousel {
         let last = this[ATTRIBUTE_SYMBOL].children[lastPosition];
         
         last.style.transition = "ease 0s";
-        last.style.transform = `translate(${-500 - 500 * lastPosition + event.dx + this[ATTRIBUTE_SYMBOL].offset}px)`;
+        last.style.transform = `translate(${-this.widthNum - this.widthNum * lastPosition + event.dx + this[ATTRIBUTE_SYMBOL].offset}px)`;
 
         next.style.transition = "ease 0s";
-        next.style.transform = `translate(${500 - 500 * nextPosition + event.dx + this[ATTRIBUTE_SYMBOL].offset}px)`;
+        next.style.transform = `translate(${this.widthNum - this.widthNum * nextPosition + event.dx + this[ATTRIBUTE_SYMBOL].offset}px)`;
 
         current.style.transition = "ease 0s";
-        current.style.transform = `translate(${ - 500 * position + event.dx + this[ATTRIBUTE_SYMBOL].offset}px)`;
+        current.style.transform = `translate(${ - this.widthNum * position + event.dx + this[ATTRIBUTE_SYMBOL].offset}px)`;
 
         this[ATTRIBUTE_SYMBOL].position = position;
     }
@@ -209,55 +221,128 @@ export default class Carousel {
         } else {
             last.style.transition = "ease 0s";
         }
-        last.style.transform = `translate(${-500 - 500 * lastPosition}px)`;
+        last.style.transform = `translate(${-this.widthNum - this.widthNum * lastPosition}px)`;
 
         if (isLeft) {
             next.style.transition = "";
         } else {
             next.style.transition = "ease 0s";
         }
-        next.style.transform = `translate(${500 - 500 * nextPosition}px)`;
+        next.style.transform = `translate(${this.widthNum - this.widthNum * nextPosition}px)`;
 
         current.style.transition = "";
-        current.style.transform = `translate(${- 500 * position}px)`;
+        current.style.transform = `translate(${- this.widthNum * position}px)`;
 
         //恢复轮播
-        this[ATTRIBUTE_SYMBOL].nextPicTimer = setTimeout(this.nextPic.bind(this), 3000);
+        if (this[ATTRIBUTE_SYMBOL].autoplay == "true")
+            this[ATTRIBUTE_SYMBOL].nextPicTimer = setTimeout(this.nextPic.bind(this), `${this.getAttribute("fullTime") || this.fullTime || 3000}`);
 
-        //conductor
-        for(let child of this[ATTRIBUTE_SYMBOL].indicator.children) {
-            child.style.opacity = "0.3";
+        //indicator
+        if (this[ATTRIBUTE_SYMBOL].indicatorSwt == "true") {
+            for(let child of this[ATTRIBUTE_SYMBOL].indicator.children) {
+                child.style.opacity = "0.3";
+            }
+            this[ATTRIBUTE_SYMBOL].indicator.children[position].style.opacity = 1;
         }
-        this[ATTRIBUTE_SYMBOL].indicator.children[position].style.opacity = 1;
 
         this[ATTRIBUTE_SYMBOL].position = position;
     }
     
 
+    //Properties
+
+    //width  宽度
+    set width(value) {
+        this[PROPERTY_SYMBOL].width = value;
+    }
+    get width() {
+        return this[PROPERTY_SYMBOL].width;
+    }
+
+    //rate  速率
+    set rate(value) {
+        this[PROPERTY_SYMBOL].rate = value;
+    }
+    get rate() {
+        return this[PROPERTY_SYMBOL].rate;
+    }
+
+    //fullTime  总时间
+    set fullTime(value) {
+        this[PROPERTY_SYMBOL].fullTime = value;
+    }
+    get fullTime() {
+        return this[PROPERTY_SYMBOL].fullTime;
+    }
+
+    //switchTime  图片切换动画的时间
+    set switchTime(value) {
+        this[PROPERTY_SYMBOL].switchTime = value;
+    }
+    get switchTime() {
+        return this[PROPERTY_SYMBOL].switchTime;
+    }
+
+    //autoplay 是否自动切换
+    set autoplay(value) {
+        this[PROPERTY_SYMBOL].autoplay = value;
+    }
+    get autoplay() {
+        return this[PROPERTY_SYMBOL].autoplay;
+    }
+
+    //是否需要指示器
+    set indicator(value) {
+        this[PROPERTY_SYMBOL].indicator = value;
+    }
+    get indicator() {
+        return this[PROPERTY_SYMBOL].indicator;
+    }
+
+
+    //Attributes
     getAttribute(name) {
         return this[ATTRIBUTE_SYMBOL][name];
     }
     setAttribute(name, value) {
-        if(name == "data") {
+        if (name == "data") {            
             this.addChildren(value);
+        }
+        if (name == "width") {
+            this[PROPERTY_SYMBOL].width = value;
+        }
+        if (name == "rate") {
+            this[PROPERTY_SYMBOL].rate = value;
+        }
+        if (name == "fullTime") {
+            this[PROPERTY_SYMBOL].fullTime = value;
+        }
+        if (name == "switchTime") {
+            this[PROPERTY_SYMBOL].switchTime = value;
+        }
+        if (name == "autoplay") {
+            this[PROPERTY_SYMBOL].autoplay = value;
+        }
+        if (name == "indicator") {
+            this[PROPERTY_SYMBOL].indicator = value;
         }
         return this[ATTRIBUTE_SYMBOL][name] = value;
     }
     
     addEventListener(type, listener) {
-        if(!this[EVENT_SYMBOL][type]) {
+        if (!this[EVENT_SYMBOL][type]) {
             this[EVENT_SYMBOL][type] = new Set;
         }
         this[EVENT_SYMBOL][type].add(listener);
     }
     removeEventListener(type, listener) {
-        if(!this[EVENT_SYMBOL][type]) {
+        if (!this[EVENT_SYMBOL][type]) {
             return;
         }
         this[EVENT_SYMBOL][type].delete(listener);
     }
     triggerEvent(type) {
-        if(!this[EVENT_SYMBOL][type]) 
+        if (!this[EVENT_SYMBOL][type]) 
             return;
         for(let event of this[EVENT_SYMBOL][type]) {
             event.call(this);

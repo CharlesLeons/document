@@ -1,7 +1,7 @@
 .carousel {
-    position: absolute;
     width: 500px;
     height: 300px;
+    position: absolute;
     overflow: hidden;
     white-space: nowrap;
     outline: 1px solid navy;
@@ -28,4 +28,7 @@
     background-color: white;
     margin: 3px;
     border-radius: 50%;
+}
+.indicator>div:hover {
+    cursor: pointer;
 }
