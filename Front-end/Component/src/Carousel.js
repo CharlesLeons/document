@@ -63,6 +63,26 @@ export default class Carousel {
             this[ATTRIBUTE_SYMBOL].indicator.appendChild(e);
         }
         this[ATTRIBUTE_SYMBOL].indicator.children[this[ATTRIBUTE_SYMBOL].position].style.opacity = 1;
+
+        //加入点击切换
+        for(let i = 0; i < this[ATTRIBUTE_SYMBOL].indicator.children.length; i++) {
+            let n = i; 
+            this[ATTRIBUTE_SYMBOL].indicator.children[i].addEventListener("click", event => {
+                for(let j = 0; j < this[ATTRIBUTE_SYMBOL].children.length; j++) {
+                    this[ATTRIBUTE_SYMBOL].children[j].style.transition = "ease 0.5s";
+                    this[ATTRIBUTE_SYMBOL].children[j].style.transform = `translateX(${- this.widthNum * n}px)`;
+                }
+                this[ATTRIBUTE_SYMBOL].position = n;
+                
+                if (this[ATTRIBUTE_SYMBOL].indicatorSwt == "true") {
+                    for(let child of this[ATTRIBUTE_SYMBOL].indicator.children) {
+                        child.style.opacity = "0.3";
+                    }
+                    this[ATTRIBUTE_SYMBOL].indicator.children[n].style.opacity = 1;
+                }  
+            })
+            
+        }
     }
 
     //加入图片
@@ -103,7 +123,7 @@ export default class Carousel {
         current.style.transition = "ease 0s";              
 
         next.style.transition = "ease 0s";
-        next.style.transform = `translate(${100 - 100 * nextPosition}%)`;
+        next.style.transform = `translate(${this.widthNum - this.widthNum * nextPosition}px)`;
         
         this.offsetStartTime = Date.now();
 
@@ -154,7 +174,6 @@ export default class Carousel {
     tap(event) {
         if (this[ATTRIBUTE_SYMBOL].autoplay == "true")
             this[ATTRIBUTE_SYMBOL].nextPicTimer = setTimeout(this.nextPic.bind(this), `${this.getAttribute("fullTime") || this.fullTime || 3000}`);
-        console.log("tap");
     }
     //鼠标拖拽
     pan(event) {
