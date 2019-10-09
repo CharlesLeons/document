@@ -1,3 +1,5 @@
+import {enableGesture} from "./gesture.js"
+
 const PROPERTY_SYMBOL = Symbol("property");
 const ATTRIBUTE_SYMBOL = Symbol("attribute");
 const EVENT_SYMBOL = Symbol("event");
@@ -22,16 +24,86 @@ export default class TabView {
     created() {
         this.root = document.createElement("div");
         this.root.style.display = "flex";
-
         this.headerContainer = document.createElement("div");
         this.headerContainer.style.height = "93px";
-
         this.contentContainer = document.createElement("div");
         this.contentContainer.style.overflow = "hidden";
         this.contentContainer.style.whiteSpace = "nowrap";
         this.contentContainer.style.flex = "1";
         this.root.appendChild(this.headerContainer);
         this.root.appendChild(this.contentContainer);
+
+
+        enableGesture(this.contentContainer);
+        
+        this.root.addEventListener("touchmove", function(e) {
+            e.cancelBubble = true;
+            e.stopImmediatePropagation();
+        }, {
+            passive: false
+        });
+
+        this[STATE_SYMBOL].position = 0;
+
+        this.contentContainer.addEventListener("pan", event => {
+            event.preventDefault();
+            if (event.isVertical) return;
+
+            let width = this.contentContainer.getBoundingClientRect().width;    //  .width
+
+            let dx = event.dx;
+
+            if (this[STATE_SYMBOL].position == 0 && event.dx > 0) {
+                dx = dx / 2;
+            }
+            if (this[STATE_SYMBOL].position == this.contentContainer.children.length - 1 && event.dx < 0) {
+                dx = dx / 2;
+            }
+
+            for(let i = 0; i < this.contentContainer.children.length; i++) {
+                this.contentContainer.children[i].style.transition = "transform ease 0s";
+                this.contentContainer.children[i].style.transform = `translateX(${ dx - width * this[STATE_SYMBOL].position}px)`;
+            }
+        });
+        this.contentContainer.addEventListener("panend", event => {
+            if (event.isVertical) return;
+            let width = this.contentContainer.getBoundingClientRect().width;
+
+            let isLeft;
+            if (event.isFlick && Math.abs(event.dx) > Math.abs(event.dy)) {
+                if (event.dx > 0) {
+                    this[STATE_SYMBOL].position --;
+                    isLeft = true;
+                }
+                if (event.dx < 0) {
+                    this[STATE_SYMBOL].position ++;
+                    isLeft = false;
+                }
+            } else {
+                if (event.dx > width/2) {
+                    this[STATE_SYMBOL].position --;
+                    isLeft = true;
+                } else if (event.dx < - width/2) {
+                    this[STATE_SYMBOL].position ++;
+                    isLeft = false;
+                } else if (event.dx > 0) {
+                    isLeft = false;
+                } else {
+                    isLeft = true;
+                }
+            }
+
+
+            if (this[STATE_SYMBOL].position < 0)
+            this[STATE_SYMBOL].position = 0;
+            if (this[STATE_SYMBOL].position >= this.contentContainer.children.length) 
+            this[STATE_SYMBOL].position = this.contentContainer.children.length - 1;
+            
+            for(let i = 0; i < this.contentContainer.children.length; i++) {
+                this.contentContainer.children[i].style.transition = "transform ease 0.5s";
+                this.contentContainer.children[i].style.transform = `translateX(${- width * this[STATE_SYMBOL].position}px)`;
+            }
+        });
     }
     mounted() {
 
@@ -63,12 +135,13 @@ export default class TabView {
 
         //加入点击切换
         header.addEventListener("click", event => {
+            this[STATE_SYMBOL].position = n;
             for(let i = 0; i < this.contentContainer.children.length; i++) {
                 this.contentContainer.children[i].style.transition = "ease 0.5s";
                 this.contentContainer.children[i].style.transform = `translateX(${- 100 * n}%)`;
             }
         })
-        
+
         this.headerContainer.appendChild(header);
 
         child.appendTo(this.contentContainer);
@@ -80,6 +153,7 @@ export default class TabView {
     }
 
 
+
     get children() {
         return this[PROPERTY_SYMBOL].children;
     }
@@ -88,7 +162,7 @@ export default class TabView {
         if (name == "style") {
             return this.root.getAttribute("style");
         }
-        return this[ATTRIBUTE_SYMBOL][name];
+        return this[name];
     }
     setAttribute(name, value) {
         if (name == "style") {
@@ -96,7 +170,7 @@ export default class TabView {
             this.root.style.display = "flex";
             this.root.style.flexDirection = "column";
         }
-        return this[ATTRIBUTE_SYMBOL][name] = value;
+        return this[name] = value;
     }
     addEventListener(type, listener) {
         if (!this[EVENT_SYMBOL][type])

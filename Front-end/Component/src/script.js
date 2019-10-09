@@ -9,7 +9,11 @@ import "../style/style.css";
 function myCreate(Class, attributes, ...children) {
     var object = new Class();
     for(let name in attributes) {
-        object.setAttribute(name, attributes[name]);
+        if(name.match(/^on-([\s\S]+)$/)) {
+            object.addEventListener(RegExp.$1, attributes[name]);
+        } else {
+            object.setAttribute(name, attributes[name]);
+        }
     }
     for(let child of children) {
         if (typeof child === "string") {
@@ -29,10 +33,16 @@ let data = [
     ];
 
 
+function loadMore() {
+    setTimeout(() => {
+        this.setAttribute("placeHolderText", "No More")
+    }, 5000);
+}
+
                 //-webkit-overflow-scrolling:touch    触摸内部滑动
                 //white-space:normal                  恢复换行
 var c = <TabView style="width:100%;height:100%;">
-            <ScrollView tab-title="推荐" style="-webkit-overflow-scrolling:touch;overflow:scroll;white-space:normal;font-size:50px;background-color:lightgreen;">
+            <ScrollView tab-title="推荐" on-scrollToBottom={loadMore} style="-webkit-overflow-scrolling:touch;overflow:scroll;white-space:normal;font-size:50px;background-color:lightgreen;">
                 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1
                 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1
                 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1

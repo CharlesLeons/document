@@ -23,14 +23,26 @@ export default class ScrollView {
 
     created(){
         this.root = document.createElement("div");
+        this.placeHolder = document.createElement("div");
+        this.updatePlaceHolder();
+        this.placeHolder.style.backgroundColor = "red";
+        this.root.appendChild(this.placeHolder);
 
-        //允许内部滑动
-        this.root.addEventListener("touchmove",function(e){ 
-            e.cancelBubble = true;
-            e.stopImmediatePropagation();
-        }, {
-            passive:false
-        });
+        let triggered = false;
+
+        this.root.addEventListener("scroll", event => {
+            let clientRect = this.root.getBoundingClientRect();
+            let placeHolderRect = this.placeHolder.getBoundingClientRect();
+            if (clientRect.bottom >= placeHolderRect.bottom - 1) {
+                if (!triggered) {
+                    this.triggerEvent("scrollToBottom");
+                    triggered = true;
+                }
+            }
+            // if (this.root.scrollHeight - this.root.scrollTop <= clientRect.height + 1) {
+            //     this.triggerEvent("scrollToBottom");
+            // }
+        })
     }
     mounted(){
 
@@ -42,6 +54,11 @@ export default class ScrollView {
 
     }
 
+    updatePlaceHolder() {
+        this.placeHolder.innerText = this.getAttribute("placeHolderText") || "加载更多";
+    }
+
+
     get style() {
         return this.root.style;
     }
@@ -49,6 +66,7 @@ export default class ScrollView {
     appendChild(child){
         this.children.push(child);
         child.appendTo(this.root);
+        this.root.appendChild(this.placeHolder);
     }
 
 
@@ -56,7 +74,7 @@ export default class ScrollView {
         return this[PROPERTY_SYMBOL].children;
     }
     getAttribute(name){
-        if(name == "style") {
+        if (name == "style") {
             return this.root.getAttribute("style");
         }
         return this[ATTRIBUTE_SYMBOL][name]
@@ -64,6 +82,10 @@ export default class ScrollView {
     setAttribute(name, value){
         if(name == "style") {
             this.root.setAttribute("style", value);
+        }
+        if (name == "placeHolderText") {
+            this[ATTRIBUTE_SYMBOL][name] = value;
+            this.updatePlaceHolder();
         }
         return this[ATTRIBUTE_SYMBOL][name] = value;
     }
