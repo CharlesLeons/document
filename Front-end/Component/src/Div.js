@@ -3,21 +3,23 @@ const ATTRIBUTE_SYMBOL = Symbol("attribute");
 const EVENT_SYMBOL = Symbol("event");
 const STATE_SYMBOL = Symbol("state");
 
-export class Component {
+export default class Div {
     constructor(config) {
         this[PORPERTY_SYMBOL] = Object.create(null);
         this[ATTRIBUTE_SYMBOL] = Object.create(null);
         this[EVENT_SYMBOL] = Object.create(null);
         this[STATE_SYMBOL] = Object.create(null);
+        this[PORPERTY_SYMBOL].children = [];
         this.created();
     }
 
     appendTo(element) {
-
+        element.appendChild(this.root);
+        this.mounted();
     }
 
     created() {
-
+        this.root = document.createElement("div");
     }
     mounted() {
 
@@ -29,10 +31,27 @@ export class Component {
 
     }
 
+    appendChild(child) {
+        this[PORPERTY_SYMBOL].children.push(child);
+        child.appendTo(this.root);
+    }
+
+
+    get children() {
+        return this[PORPERTY_SYMBOL].children;
+    }
+
     getAttribute(name) {
         return this[ATTRIBUTE_SYMBOL][name];
     }
-    setAttibute(name, value) {
+    setAttribute(name, value) {
+        if (name == "style") {
+            this.root.setAttribute("style", value);
+            this.root.style.display = "flex";
+            this.root.style.overflow = "hidden";
+            this.root.style.flexWrap = "nowrap";
+            this.root.style.flexShrink = "0";
+        }
         return this[ATTRIBUTE_SYMBOL][name] = value;
     }
     addEventListener(type, listener) {
