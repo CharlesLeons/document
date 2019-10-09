@@ -60,6 +60,14 @@ export default class TabView {
         header.style.fontFamily = "PingFang SC";
         header.style.fontSize = "46px";
         header.style.margin = "0 35px";
+
+        //加入点击切换
+        header.addEventListener("click", event => {
+            for(let i = 0; i < this.contentContainer.children.length; i++) {
+                this.contentContainer.children[i].style.transition = "ease 0.5s";
+                this.contentContainer.children[i].style.transform = `translateX(${- 100 * n}%)`;
+            }
+        })
         
         this.headerContainer.appendChild(header);
 

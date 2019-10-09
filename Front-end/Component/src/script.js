@@ -28,9 +28,10 @@ let data = [
     "https://static001.geekbang.org/resource/image/73/e4/730ea9c393def7975deceb48b3eb6fe4.jpg"
     ];
 
+
+                //-webkit-overflow-scrolling:touch    触摸内部滑动
+                //white-space:normal                  恢复换行
 var c = <TabView style="width:100%;height:100%;">
-            //-webkit-overflow-scrolling:touch    触摸内部滑动
-            //white-space:normal                  恢复换行
             <ScrollView tab-title="推荐" style="-webkit-overflow-scrolling:touch;overflow:scroll;white-space:normal;font-size:50px;background-color:lightgreen;">
                 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1
                 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1 test1
