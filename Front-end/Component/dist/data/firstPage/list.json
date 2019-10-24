@@ -1,0 +1,38 @@
+[
+    {
+        "icon": "images/icon_极客时间.png",
+        "shopName": "极客时间旗舰店",
+        "shopSource": "images/page1/天猫.png",
+        "messageIcon": "images/page1/店铺.svg",
+        "followers": "1.3万",
+        "left": "images/page1/极客时间_大_素材1.png",
+        "up": "images/page1/极客时间_大_素材2.png",
+        "down": "images/page1/极客时间_大_素材3.png",
+        "rightArrow_white": "images/向右_箭头_白.png",
+        "rightArrow_gray": "images/向右_箭头_灰.png"
+    },
+    {
+        "icon": "images/icon_极客大学.png",
+        "shopName": "极客大学天猫店",
+        "shopSource": "images/page1/天猫.png",
+        "messageIcon": "images/page1/店铺.svg",
+        "followers": "1.3万",
+        "left": "images/page1/极客大学_大_素材1.png",
+        "up": "images/page1/极客大学_大_素材2.png",
+        "down": "images/page1/极客大学_大_素材3.png",
+        "rightArrow_white": "images/向右_箭头_白.png",
+        "rightArrow_gray": "images/向右_箭头_灰.png"
+    },
+    {
+        "icon": "images/icon_InfoQ.png",
+        "shopName": "InfoQ官方旗舰店",
+        "shopSource": "images/page1/天猫.png",
+        "messageIcon": "images/page1/店铺.svg",
+        "followers": "1.3万",
+        "left": "images/page1/InfoQ_大_素材1.png",
+        "up": "images/page1/InfoQ_大_素材2.png",
+        "down": "images/page1/InfoQ_大_素材3.png",
+        "rightArrow_white": "images/向右_箭头_白.png",
+        "rightArrow_gray": "images/向右_箭头_灰.png"
+    }
+]

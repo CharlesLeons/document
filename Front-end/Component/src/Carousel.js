@@ -149,6 +149,7 @@ export default class Carousel {
         this[ATTRIBUTE_SYMBOL].position = nextPosition;
 
         this[ATTRIBUTE_SYMBOL].nextPicTimer = setTimeout(this.nextPic.bind(this), `${this.getAttribute("fullTime") || this.fullTime || 3000}`);
+        console.log("setTimeout-nextPic");
     }
 
     //加入手势
@@ -174,6 +175,7 @@ export default class Carousel {
     tap(event) {
         if (this[ATTRIBUTE_SYMBOL].autoplay == "true")
             this[ATTRIBUTE_SYMBOL].nextPicTimer = setTimeout(this.nextPic.bind(this), `${this.getAttribute("fullTime") || this.fullTime || 3000}`);
+        console.log("setTimeout-tap");
     }
     //鼠标拖拽
     pan(event) {
@@ -255,7 +257,8 @@ export default class Carousel {
         //恢复轮播
         if (this[ATTRIBUTE_SYMBOL].autoplay == "true")
             this[ATTRIBUTE_SYMBOL].nextPicTimer = setTimeout(this.nextPic.bind(this), `${this.getAttribute("fullTime") || this.fullTime || 3000}`);
-
+        console.log("setTimeout-panend");
+        
         //indicator
         if (this[ATTRIBUTE_SYMBOL].indicatorSwt == "true") {
             for(let child of this[ATTRIBUTE_SYMBOL].indicator.children) {
